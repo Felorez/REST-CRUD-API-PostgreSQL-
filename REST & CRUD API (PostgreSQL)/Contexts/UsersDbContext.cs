@@ -17,7 +17,7 @@ namespace RestApi.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(
-                "Server=localhost;Database=postgres;Port=5432;User Id=postgres;Password=ProType12Felorez"
+                "Server=localhost;Database=postgres;Port=5432;User Id=postgres;Password=?"
             );
         }
 
