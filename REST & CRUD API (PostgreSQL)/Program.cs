@@ -5,7 +5,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<UsersDbContext>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin() // Разрешить любые источники
+              .AllowAnyHeader() // Разрешить любые заголовки
+              .AllowAnyMethod(); // Разрешить любые HTTP-методы
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -27,9 +40,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "User API v1");
-        c.RoutePrefix = string.Empty; // чтобы Swagger UI был доступен по корню URL
+        c.RoutePrefix = string.Empty;
     });
 }
+
+app.UseCors();
 
 app.UseAuthorization();
 

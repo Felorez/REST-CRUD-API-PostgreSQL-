@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestApi.Data;
+using RestApi.Function;
 using System;
 
 [Route("api/[controller]")]
@@ -24,6 +25,29 @@ public class UserController : ControllerBase
     public ActionResult IsAlive()
     {
         return Ok("Content - Type: text / plain; charset = UTF - 8");
+    }
+
+    // api/user/IIN
+    [HttpGet("IIN")]
+    public async Task<ActionResult<IEnumerable<UserIIN>>> GetUserIINs()
+    {
+        var query = _context.UserIINs.AsQueryable();
+
+        return Ok(await query.ToListAsync());
+    }
+
+    // api/user/IIN/{id}
+    [HttpGet("IIN/{id}")]
+    public async Task<ActionResult<UserIIN>> GetUserIIN(int id)
+    {
+        var user = await _context.UserIINs.FindAsync(id);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        return user;
     }
 
     // GET: api/user
@@ -69,7 +93,7 @@ public class UserController : ControllerBase
             };
         }
 
-        return await query.ToListAsync();
+        return Ok(await query.ToListAsync());
     }
 
     // GET: api/user/{id}
@@ -91,12 +115,17 @@ public class UserController : ControllerBase
     public async Task<ActionResult<User>> PostUser(User user)
     {
         user.Id = null;
+        var userIIN = new UserIIN { IIN = GenerateIIN.GenerateNumberUser(user), User = user };
+
         _context.Users.Add(user);
+        _context.UserIINs.Add(userIIN);
+
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
+    // POST: api/user/sort
     [HttpPost("sort")]
     public async Task<IActionResult> SortGoodsByPrice()
     {
