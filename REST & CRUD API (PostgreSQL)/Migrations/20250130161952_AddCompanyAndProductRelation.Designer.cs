@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestApi.Data;
@@ -11,9 +12,11 @@ using RestApi.Data;
 namespace RestApi.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250130161952_AddCompanyAndProductRelation")]
+    partial class AddCompanyAndProductRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,11 +27,11 @@ namespace RestApi.Migrations
 
             modelBuilder.Entity("RestApi.Data.Company", b =>
                 {
-                    b.Property<int?>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -41,11 +44,11 @@ namespace RestApi.Migrations
 
             modelBuilder.Entity("RestApi.Data.Product", b =>
                 {
-                    b.Property<int?>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
@@ -126,8 +129,7 @@ namespace RestApi.Migrations
                 {
                     b.HasOne("RestApi.Data.User", "User")
                         .WithOne("UserIIN")
-                        .HasForeignKey("RestApi.Data.UserIIN", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("RestApi.Data.UserIIN", "UserId");
 
                     b.Navigation("User");
                 });

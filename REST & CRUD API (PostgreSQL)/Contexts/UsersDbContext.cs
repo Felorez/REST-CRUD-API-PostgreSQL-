@@ -16,7 +16,13 @@ namespace RestApi.Data
             modelBuilder.Entity<User>()
                 .HasOne(u => u.UserIIN)
                 .WithOne(ui => ui.User)
-                .HasForeignKey<UserIIN>(ui => ui.UserId);
+                .HasForeignKey<UserIIN>(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Company)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CompanyId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -29,5 +35,7 @@ namespace RestApi.Data
         public DbSet<User> Users { get; set; }
 
         public DbSet<UserIIN> UserIINs { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<Product> Products { get; set; }
     }
 }

@@ -58,7 +58,10 @@ public class UserController : ControllerBase
         int? minAge = null,
         int? maxAge = null,
         string? sortBy = null,
-        bool descending = false)
+        bool descending = false,
+        int page = 1,
+        int pageSize = 100
+        )
     {
         var query = _context.Users.AsQueryable();
 
@@ -86,6 +89,7 @@ public class UserController : ControllerBase
         {
             query = sortBy.ToLower() switch
             {
+                "id" => descending ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id),
                 "name" => descending ? query.OrderByDescending(u => u.Name) : query.OrderBy(u => u.Name),
                 "city" => descending ? query.OrderByDescending(u => u.City) : query.OrderBy(u => u.City),
                 "age" => descending ? query.OrderByDescending(u => u.Age) : query.OrderBy(u => u.Age),
@@ -93,7 +97,16 @@ public class UserController : ControllerBase
             };
         }
 
-        return Ok(await query.ToListAsync());
+        return Ok(new
+        {
+            TotalCount = await _context.Users.CountAsync(),
+            Page = page,
+            PageSize = pageSize,
+            Data = await query
+                            .Skip((page - 1) * pageSize)
+                            .Take(pageSize)
+                            .ToListAsync()
+        });
     }
 
     // GET: api/user/{id}
@@ -114,8 +127,9 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> PostUser(User user)
     {
-        user.Id = null;
         var userIIN = new UserIIN { IIN = GenerateIIN.GenerateNumberUser(user), User = user };
+        user.Id = null;
+        user.UserIIN = userIIN;
 
         _context.Users.Add(user);
         _context.UserIINs.Add(userIIN);
@@ -123,20 +137,6 @@ public class UserController : ControllerBase
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-    }
-
-    // POST: api/user/sort
-    [HttpPost("sort")]
-    public async Task<IActionResult> SortGoodsByPrice()
-    {
-        var users = await _context.Users
-                                  .OrderBy(g => g.Id)
-                                  .ToListAsync();
-
-        _context.Users.UpdateRange(users);
-        await _context.SaveChangesAsync();
-
-        return Ok(users);
     }
 
     // PUT: api/user/{id}
@@ -171,6 +171,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> DeleteUser(int id)
     {
         var user = await _context.Users.FindAsync(id);
+
         if (user == null)
         {
             return NotFound();
